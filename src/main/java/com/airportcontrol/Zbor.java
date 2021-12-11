@@ -2,8 +2,6 @@ package com.airportcontrol;
 
 public class Zbor {
 
-
-
     private String ZborID;
     private String AvionID;
     private String Destinatie;
@@ -38,7 +36,5 @@ public class Zbor {
     public int getNrLocuri() {
         return NrLocuri;
     }
-
-
 
 }
