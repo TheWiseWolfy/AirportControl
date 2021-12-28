@@ -1,4 +1,4 @@
-package com.airportcontrol;
+package com.airportcontrol.View.TableClasses;
 
 public class Zbor {
 

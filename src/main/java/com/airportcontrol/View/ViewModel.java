@@ -1,8 +1,6 @@
-package com.airportcontrol;
+package com.airportcontrol.View;
 
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -10,6 +8,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class ViewModel extends Application {
+
     @Override
     public void start(Stage stage) throws IOException {
 
@@ -19,6 +18,7 @@ public class ViewModel extends Application {
        stage.setScene(scene);
        stage.show();
     }
+
 
 
     public static void main(String[] args) {
