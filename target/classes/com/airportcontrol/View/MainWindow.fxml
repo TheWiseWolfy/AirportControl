@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<VBox alignment="CENTER" minHeight="-Infinity" minWidth="-Infinity" prefHeight="508.0" prefWidth="735.0" spacing="20.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.airportcontrol.View.MainWindowController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+   <children>
+      <TabPane prefHeight="546.0" prefWidth="430.0" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+        <tabs>
+            <Tab closable="false" text="Reservations">
+               <content>
+                  <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="800.0">
+                     <children>
+                        <AnchorPane prefHeight="50.0" prefWidth="661.0" VBox.vgrow="ALWAYS">
+                           <children>
+                              <Text layoutX="218.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Selected Flight:" wrappingWidth="94.18532180786133" />
+                              <ChoiceBox layoutX="305.0" layoutY="11.0" prefWidth="150.0" />
+                           </children>
+                        </AnchorPane>
+                        <HBox prefHeight="400.0" prefWidth="661.0" VBox.vgrow="ALWAYS">
+                           <children>
+                              <TableView prefHeight="202.0" prefWidth="544.0" HBox.hgrow="ALWAYS">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </TableView>
+                              <TextArea editable="false" prefHeight="202.0" prefWidth="309.0" text="Current Text" HBox.hgrow="ALWAYS" />
+                           </children>
+                           <VBox.margin>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <AnchorPane prefHeight="300.0" prefWidth="661.0" VBox.vgrow="ALWAYS" />
+                     </children>
+                  </VBox>
+               </content>
+            </Tab>
+            <Tab closable="false" text="Flights">
+               <content>
+                  <HBox prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <AnchorPane prefHeight="366.0" prefWidth="400.0" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                           <children>
+                              <Button fx:id="FlightButton1" layoutX="50.0" layoutY="38.0" mnemonicParsing="false" onAction="#insertFlight" text="Add Flight" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" />
+                              <Button fx:id="FlightButton2" layoutX="50.0" layoutY="94.0" mnemonicParsing="false" text="Delete Selected Flight" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" />
+                              <Button fx:id="FlightButton3" layoutX="50.0" layoutY="151.0" mnemonicParsing="false" text="Edit Selected Flight" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" />
+                           </children>
+                        </AnchorPane>
+                        <TableView fx:id="flightTableView" prefHeight="421.0" prefWidth="400.0" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </HBox.margin>
+                        </TableView>
+                     </children>
+                  </HBox>
+               </content>
+            </Tab>
+          <Tab closable="false" text="Planes">
+               <content>
+                  <HBox prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <AnchorPane prefHeight="440.0" prefWidth="400.0" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                           <children>
+                              <Button fx:id="PlanesButton1" layoutX="50.0" layoutY="38.0" mnemonicParsing="false" onAction="#insertPlaneWindow" text="Add Plane" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" />
+                              <Button fx:id="PlanesButton2" layoutX="50.0" layoutY="94.0" mnemonicParsing="false" onAction="#deleteSelectedPlane" text="Delete Selected Plane" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" />
+                              <Button fx:id="PlanesButton3" layoutX="50.0" layoutY="151.0" mnemonicParsing="false" onAction="#editSelectedPlane" text="Edit Selected Plane" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" />
+                           </children>
+                        </AnchorPane>
+                        <TableView fx:id="planeTableView" prefHeight="421.0" prefWidth="400.0" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </HBox.margin>
+                        </TableView>
+                     </children>
+                  </HBox>
+               </content>
+          </Tab>
+          <Tab closable="false" text="Airports">
+               <content>
+                  <HBox prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <AnchorPane prefHeight="200.0" prefWidth="400.0" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Button fx:id="AirportButton1" layoutX="69.0" layoutY="38.0" mnemonicParsing="false" onAction="#insertAirport" text="Add Airport" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" />
+                              <Button fx:id="AirportButton2" layoutX="50.0" layoutY="94.0" mnemonicParsing="false" onAction="#deleteSelectedAirport" text="Remove Selected Airport" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" />
+                              <Button fx:id="AirportButton3" layoutX="50.0" layoutY="151.0" mnemonicParsing="false" onAction="#editSelectedAirport" text="Edit Selected Airport" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" />
+                           </children>
+                        </AnchorPane>
+                        <TableView fx:id="airportTableView" prefHeight="200.0" prefWidth="400.0" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </HBox.margin>
+                        </TableView>
+                     </children>
+                  </HBox>
+               </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+   </children>
+</VBox>

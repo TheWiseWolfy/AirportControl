@@ -1,7 +1,10 @@
 package com.airportcontrol.View;
 
 import com.airportcontrol.DatabaseConnection;
+import com.airportcontrol.Other.ErrorHandler;
+import com.airportcontrol.View.TableClasses.Airport;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -13,6 +16,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Objects;
 
 public class InsertAirportController {
 
@@ -22,12 +26,16 @@ public class InsertAirportController {
     @FXML
     TextField textFieldInsert;
 
+    @FXML
     public static void display( ){
         try {
-            Parent root = FXMLLoader.load(InsertAirportController.class.getResource("InsertAirport.fxml"));
+
+            FXMLLoader fxmlLoader = new FXMLLoader( InsertAirportController.class.getResource("InsertAirport.fxml"));
+            Scene scene = new Scene(fxmlLoader.load());
+
             Stage stage = new Stage();
             stage.setTitle("Insert Airport");
-            stage.setScene(new Scene(root));
+            stage.setScene(scene);
             stage.showAndWait();
         }
         catch (IOException exception) {
@@ -35,25 +43,22 @@ public class InsertAirportController {
         }
     }
 
-
-    @FXML
-    void insertAirport(ActionEvent e) {
+    public void insertAirport(ActionEvent e) {
         DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
 
         String desiredName = textFieldInsert.getText();
+
+        if( desiredName.isBlank() ){
+            ErrorHandler.EmptyFieldError();
+            return;
+        }
 
         try {
             databaseConnection.addAirport(desiredName);
         }
         catch (SQLException ex){
-
             if(  ex.getErrorCode() == 1) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Insert Error");
-                alert.setHeaderText(null);
-                alert.setContentText(desiredName + " is already in the database !");
-
-                alert.showAndWait();
+                ErrorHandler.DuplicateError(desiredName);
             }
         }
         finally {

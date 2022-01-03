@@ -10,4 +10,6 @@ module com.example.airportcontrol {
     opens com.airportcontrol.View to javafx.fxml;
     exports com.airportcontrol.View.TableClasses;
     opens com.airportcontrol.View.TableClasses to javafx.fxml;
+    exports com.airportcontrol.Other;
+    opens com.airportcontrol.Other to javafx.fxml;
 }
