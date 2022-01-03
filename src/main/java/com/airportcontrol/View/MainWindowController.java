@@ -109,6 +109,22 @@ public class MainWindowController {
         updateTableValues();
     }
 
+    @FXML
+    void deleteSelectedFlight(){
+        Flight selectedFlight = flightTableView.getSelectionModel().getSelectedItem();
+
+        if( selectedFlight != null) {
+            try {
+                DatabaseConnection.getInstance().deleteDatabaseFlight(selectedFlight.getFlightID() );
+            } catch (SQLException e) {
+                if(e.getErrorCode() == 2292){
+                    ErrorHandler.SimpleError( "There are still flights  using this plane","Depedency Error");
+                }else { e.printStackTrace(); }
+            }
+        }
+        updateTableValues();
+    }
+
     //_____________GENERAL FUCTIONS_____________
     private void initializeTable(){
 

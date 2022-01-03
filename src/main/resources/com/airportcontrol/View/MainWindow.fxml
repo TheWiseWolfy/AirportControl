@@ -57,7 +57,7 @@
                            </HBox.margin>
                            <children>
                               <Button fx:id="FlightButton1" layoutX="50.0" layoutY="38.0" mnemonicParsing="false" onAction="#insertFlight" text="Add Flight" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" />
-                              <Button fx:id="FlightButton2" layoutX="50.0" layoutY="94.0" mnemonicParsing="false" text="Delete Selected Flight" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" />
+                              <Button fx:id="FlightButton2" layoutX="50.0" layoutY="94.0" mnemonicParsing="false" onAction="#deleteSelectedFlight" text="Delete Selected Flight" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" />
                               <Button fx:id="FlightButton3" layoutX="50.0" layoutY="151.0" mnemonicParsing="false" text="Edit Selected Flight" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" />
                            </children>
                         </AnchorPane>

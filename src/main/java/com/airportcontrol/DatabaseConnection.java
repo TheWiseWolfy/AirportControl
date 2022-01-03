@@ -224,6 +224,12 @@ public class DatabaseConnection {
         preparedStmt.execute();
     }
 
+    public void deleteDatabaseFlight(int flightID) throws SQLException {
+        String query = "DELETE FROM FLIGHTS WHERE FLIGHT_ID = ?";
 
-
+        // Properly insert into sql the airport
+        PreparedStatement preparedStmt = con.prepareStatement(query);
+        preparedStmt.setInt (1, flightID);
+        preparedStmt.execute();
+    }
 }
