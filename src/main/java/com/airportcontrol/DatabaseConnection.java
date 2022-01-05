@@ -317,23 +317,24 @@ public class DatabaseConnection {
                 WHERE FLIGHT_ID = ? AND FLIGHT_DEPARTURE_LOC = a.AIRPORT_ID AND FLIGHT_ARRIVAL_LOC = b.AIRPORT_ID""";
 
         PreparedStatement preparedStmt = con.prepareStatement(query);
-        preparedStmt.setInt (1, flightID);
+        preparedStmt.setInt(1, flightID);
 
         ResultSet rs = preparedStmt.executeQuery();
 
-        rs.next();
-        int id = rs.getInt("FLIGHT_ID");
-        int depID = rs.getInt("FLIGHT_DEPARTURE_LOC");
-        int arrID = rs.getInt("FLIGHT_ARRIVAL_LOC");
-        int planeID = rs.getInt("PLANE_ID");
-        String depName = rs.getString( "DEP_NAME");
-        String arrName = rs.getString("ARR_NAME" );
-        int businessSeatsLeft = rs.getInt("FLIGHT_BUSINESS_SEATS_LEFT");
-        int economySeatsLeft = rs.getInt("FLIGHT_ECONOMY_SEATS_LEFT");
+        if (rs.next()) {
+            int id = rs.getInt("FLIGHT_ID");
+            int depID = rs.getInt("FLIGHT_DEPARTURE_LOC");
+            int arrID = rs.getInt("FLIGHT_ARRIVAL_LOC");
+            int planeID = rs.getInt("PLANE_ID");
+            String depName = rs.getString("DEP_NAME");
+            String arrName = rs.getString("ARR_NAME");
+            int businessSeatsLeft = rs.getInt("FLIGHT_BUSINESS_SEATS_LEFT");
+            int economySeatsLeft = rs.getInt("FLIGHT_ECONOMY_SEATS_LEFT");
 
-        return new Flight(id,depID,arrID,planeID,depName ,arrName, businessSeatsLeft, economySeatsLeft);
+            return new Flight(id, depID, arrID, planeID, depName, arrName, businessSeatsLeft, economySeatsLeft);
+        }
+        throw new RuntimeException("bad");
     }
-
     //_____________RESERVATION BUSINESS_____________
 
     public List<Reservation> getReservationsForFlight(int flightID) throws SQLException {

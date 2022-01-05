@@ -374,8 +374,10 @@ public class MainWindowController {
             finalText += "There are " + flight.getEconomySeatsLeft() + " economy class seats left";
             finalText += " and " + flight.getBusinessSeatsLeft() + " business class seats left.\n";
             detailsBox.setText(finalText);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            if(!Objects.equals(e.getMessage(), "bad")){
+                e.printStackTrace();
+            }
         }
     }
 
