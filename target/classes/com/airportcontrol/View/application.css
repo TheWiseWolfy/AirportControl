@@ -1,0 +1,10 @@
+
+#mainWindow{
+    -fx-background-image: url("background_image.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: 46%;
+    -fx-background-position: left 10px bottom 10px;
+
+    -fx-effect: dropshadow(three-pass-box, black, 30, 0.5, 0, 0);
+
+ }

@@ -2,6 +2,7 @@ module com.example.airportcontrol {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.sql;
+    requires com.oracle.database.jdbc;
 
 
     opens com.airportcontrol to javafx.fxml;
