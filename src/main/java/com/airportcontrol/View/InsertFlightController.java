@@ -3,9 +3,8 @@ package com.airportcontrol.View;
 import com.airportcontrol.DatabaseConnection;
 import com.airportcontrol.Other.ErrorHandler;
 import com.airportcontrol.View.TableClasses.Airport;
+import com.airportcontrol.View.TableClasses.Flight;
 import com.airportcontrol.View.TableClasses.Plane;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -24,10 +23,14 @@ import java.util.Map;
 
 public class InsertFlightController {
 
-    private ObservableList<String> airplanes = FXCollections.observableArrayList();
-    private Map<String,Airport> airportMap = new HashMap<String, Airport>();
+    private ObservableList<String> airports = FXCollections.observableArrayList();
+    private Map<String,Airport> airportMap = new HashMap<>();
 
     private ObservableList<Integer> planes = FXCollections.observableArrayList();
+
+
+
+    private Flight toBeEdited;
 
     @FXML
     ChoiceBox<String> choiceBoxDeparture;
@@ -45,6 +48,7 @@ public class InsertFlightController {
             Scene scene = new Scene(fxmlLoader.load());
 
             Stage stage = new Stage();
+            stage.setResizable(false);
             stage.setTitle("Insert Flight");
             stage.setScene(scene);
             stage.showAndWait();
@@ -52,6 +56,39 @@ public class InsertFlightController {
         catch (IOException exception) {
             exception.printStackTrace();
         }
+    }
+
+    public static void display(Flight flight){
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader( InsertFlightController.class.getResource("InsertFlight.fxml"));
+            Scene scene = new Scene(fxmlLoader.load());
+
+            InsertFlightController instance = fxmlLoader.getController();
+            instance.setToBeEdited(flight);
+
+            Stage stage = new Stage();
+            stage.setResizable(false);
+            stage.setTitle("Edit Flight");
+            stage.setScene(scene);
+            stage.showAndWait();
+        }
+        catch (IOException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    public void setToBeEdited(Flight toBeEdited) {
+        this.toBeEdited = toBeEdited;
+
+        choiceBoxDeparture.getSelectionModel().select(toBeEdited.getFlightDepLocName());
+        choiceBoxArrival.getSelectionModel().select(toBeEdited.getFlightArrLocName());
+
+        choiceBoxDeparture.setDisable(true);
+        choiceBoxPlaneID.setDisable(true);
+
+        buttonInsert.setText("Edit Flight");
+
+        //Here lies a small bug that requires too much effort to fix
     }
 
     @FXML
@@ -66,7 +103,7 @@ public class InsertFlightController {
                 airportMap.put( airport.getAirportName(),airport );
             }
             //Saving the names of the airpots for a dropbox selection
-            airplanes.addAll( airportMap.keySet() );
+            airports.addAll( airportMap.keySet() );
 
             //Asociating a function with the act of selecting something
             choiceBoxDeparture.setOnAction(this::onDepLocationSelect);
@@ -75,8 +112,8 @@ public class InsertFlightController {
             ex.printStackTrace();
         }
 
-        choiceBoxDeparture.setItems(airplanes);
-        choiceBoxArrival.setItems(airplanes);
+        choiceBoxDeparture.setItems(airports);
+        choiceBoxArrival.setItems(airports);
         choiceBoxPlaneID.setItems(planes);
     }
 
@@ -99,6 +136,10 @@ public class InsertFlightController {
                     planes.add(plane.getPlaneID());
                 }
 
+               /* if(toBeEdited != null){
+                    planes.add( toBeEdited.getPlaneID() );
+                }*/
+
                 if (!planes.isEmpty()) {
                     choiceBoxPlaneID.setDisable(false);
                 }
@@ -109,7 +150,7 @@ public class InsertFlightController {
     }
 
     @FXML
-    public void insertFlight(ActionEvent e) {
+    public void buttonAction(ActionEvent e) {
         DatabaseConnection con = DatabaseConnection.getInstance();
 
         try {
@@ -119,9 +160,13 @@ public class InsertFlightController {
             String desiredArrLocationName = choiceBoxArrival.getSelectionModel().getSelectedItem();
             int desiredArrID = airportMap.get(desiredArrLocationName).getAirportID();
 
-            int desiredPlaneID = choiceBoxPlaneID.getSelectionModel().getSelectedItem();
+            if( toBeEdited == null) {
+                int desiredPlaneID = choiceBoxPlaneID.getSelectionModel().getSelectedItem();
 
-            con.addFlight(desiredDepID,desiredArrID, desiredPlaneID );
+                con.addFlight(desiredDepID, desiredArrID, desiredPlaneID);
+            }else {
+                con.editDatabaseFlight( toBeEdited.getFlightID(), desiredDepID,desiredArrID);
+            }
 
             Stage stage = (Stage) choiceBoxPlaneID.getScene().getWindow();
             stage.close();

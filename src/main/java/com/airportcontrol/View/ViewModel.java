@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class ViewModel extends Application {
 
@@ -13,9 +14,11 @@ public class ViewModel extends Application {
     public void start(Stage stage) throws IOException {
 
       FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("MainWindow.fxml"));
-       Scene scene = new Scene(fxmlLoader.load(), 600, 500);
-       stage.setTitle("Hello!");
+       Scene scene = new Scene(fxmlLoader.load(), 1200, 500);
+       scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("application.css")).toExternalForm());
+       stage.setTitle("Airport Controller!");
        stage.setScene(scene);
+       stage.setResizable(false);
        stage.show();
     }
 

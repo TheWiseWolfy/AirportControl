@@ -11,15 +11,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class MainWindowController {
 
@@ -28,7 +24,9 @@ public class MainWindowController {
      private ObservableList<Flight> flights = FXCollections.observableArrayList();
     private ObservableList<Reservation> reservations = FXCollections.observableArrayList();
 
-    private Map<String,Integer> flightsMap = new HashMap<String, Integer>();
+    private List<Button> buttonList;
+
+    private Map<String,Integer> flightsMap = new HashMap<>();
     private ObservableList<String> flightsName = FXCollections.observableArrayList();
 
     @FXML
@@ -43,9 +41,32 @@ public class MainWindowController {
     ChoiceBox<String> choiceBoxFlight;
     @FXML
     TextArea detailsBox;
+    @FXML
+    Button AirportButton1;
+    @FXML
+    Button AirportButton2;
+    @FXML
+    Button AirportButton3;
+    @FXML
+    Button PlanesButton1;
+    @FXML
+    Button PlanesButton2;
+    @FXML
+    Button PlanesButton3;
+    @FXML
+    Button FlightButton1;
+    @FXML
+    Button FlightButton2;
+    @FXML
+    Button FlightButton3;
+    @FXML
+    Button ReservationButton1;
+    @FXML
+    Button ReservationButton2;
+    @FXML
+    Button ReservationButton3;
 
     //Fuctia asta e rulata doar la initializare
-
     @FXML
     public void initialize() {
         initializeTable();
@@ -53,13 +74,18 @@ public class MainWindowController {
 
         //This has to be at the end
         initializeDropbox();
+
+        buttonList = Arrays.asList(AirportButton1,AirportButton2,AirportButton3,PlanesButton1,PlanesButton2,PlanesButton3,
+                                    FlightButton1,FlightButton2,FlightButton3,ReservationButton1,ReservationButton2,ReservationButton3);
     }
 
     //_____________AIRPORT TAB_____________
     @FXML
     void insertAirport(ActionEvent e) {
+        setButtonsDisable(true);
         InsertAirportController.display();
         updateTableValues();
+        setButtonsDisable(false);
     }
 
     @FXML
@@ -69,14 +95,16 @@ public class MainWindowController {
         if( selectedAirport != null) {
             try {
                 DatabaseConnection.getInstance().deleteDatabaseAirport(selectedAirport.getAirportID());
+                updateTableValues();
             } catch (SQLException e) {
                 if(e.getErrorCode() == 2292){
                     ErrorHandler.SimpleError( "There are still planes and flights using this location","Depedency Error");
                 }
                 else{ e.printStackTrace(); }
             }
+        }else{
+            ErrorHandler.SimpleError("You need to select something first.","No selection !");
         }
-        updateTableValues();
     }
 
     @FXML
@@ -84,9 +112,12 @@ public class MainWindowController {
         Airport selectedAirport = airportTableView.getSelectionModel().getSelectedItem();
 
         if( selectedAirport != null) {
-            EditAirportController.display(selectedAirport);
-
+            setButtonsDisable(true);
+            InsertAirportController.display(selectedAirport);
             updateTableValues();
+            setButtonsDisable(false);
+        }else{
+            ErrorHandler.SimpleError("You need to select something first.","No selection !");
         }
     }
 
@@ -94,8 +125,10 @@ public class MainWindowController {
 
     @FXML
     void insertPlaneWindow(ActionEvent e) {
+        setButtonsDisable(true);
         InsertPlaneController.display();
         updateTableValues();
+        setButtonsDisable(false);
     }
 
     @FXML
@@ -105,26 +138,39 @@ public class MainWindowController {
         if( selectedPlane != null) {
             try {
                 DatabaseConnection.getInstance().deleteDatabasePlane(selectedPlane.getPlaneID());
+                updateTableValues();
             } catch (SQLException e) {
                 if(e.getErrorCode() == 2292){
                     ErrorHandler.SimpleError( "There are still flights  using this plane","Depedency Error");
                 }else { e.printStackTrace(); }
             }
+        }else{
+            ErrorHandler.SimpleError("You need to select something first.","No selection !");
         }
-        updateTableValues();
     }
 
     @FXML
     void editSelectedPlane(){
+        Plane selectedPlane = planeTableView.getSelectionModel().getSelectedItem();
+        if( selectedPlane != null) {
+            setButtonsDisable(true);
+            InsertPlaneController.display(selectedPlane);
+            updateTableValues();
+            setButtonsDisable(false);
+        }else{
+            ErrorHandler.SimpleError("You need to select something first.","No selection !");
+        }
     }
 
     //_____________FLIGHT TAB_____________
 
     @FXML
     void insertFlight(ActionEvent e) {
+        setButtonsDisable(true);
         InsertFlightController.display();
         updateTableValues();
         updateDropbox();
+        setButtonsDisable(false);
     }
 
     @FXML
@@ -133,15 +179,30 @@ public class MainWindowController {
 
         if( selectedFlight != null) {
             try {
-                DatabaseConnection.getInstance().deleteDatabaseFlight(selectedFlight.getFlightID() );
+                DatabaseConnection.getInstance().deleteDatabaseFlight( selectedFlight.getFlightID() );
             } catch (SQLException e) {
                 if(e.getErrorCode() == 2292){
-                    ErrorHandler.SimpleError( "There are still flights  using this plane","Depedency Error");
+                    ErrorHandler.SimpleError( "There are still flights  using this plane.","Depedency Error");
                 }else { e.printStackTrace(); }
             }
+        }else{
+            ErrorHandler.SimpleError("You need to select something first.","No selection !");
         }
         updateTableValues();
         updateDropbox();
+    }
+
+    @FXML
+    private void editSelectedFlight(ActionEvent actionEvent){
+        Flight selectedFlight = flightTableView.getSelectionModel().getSelectedItem();
+        if( selectedFlight != null) {
+            setButtonsDisable(true);
+            InsertFlightController.display(selectedFlight);
+            updateTableValues();
+            setButtonsDisable(false);
+        }else{
+            ErrorHandler.SimpleError("You need to select something first.","No selection !");
+        }
     }
 
     @FXML
@@ -154,10 +215,12 @@ public class MainWindowController {
     @FXML
     void insertReservation(ActionEvent e) {
         if( choiceBoxFlight.getSelectionModel().getSelectedItem() != null)  {
+            setButtonsDisable(true);
             String flightName = choiceBoxFlight.getSelectionModel().getSelectedItem();
             int flightID = flightsMap.get(flightName);
             InsertReservationController.display( flightID );
             updateTableValues();
+            setButtonsDisable(false);
         }else{
             ErrorHandler.SimpleError("You need to select a flight before making a reservation.","No selection !");
         }
@@ -175,15 +238,28 @@ public class MainWindowController {
                 ex.printStackTrace();
             }
         }else{
-            ErrorHandler.SimpleError("You need to select a reservation before deleting it.","No selection !");
+            ErrorHandler.SimpleError("You need to select something first.","No selection !");
+        }
+    }
+
+    @FXML
+    void editSelectedReservation(ActionEvent e){
+        Reservation selectedReservation = reservationsTableView.getSelectionModel().getSelectedItem();
+        if( selectedReservation != null) {
+            setButtonsDisable(true);
+            InsertReservationController.display(selectedReservation);
+            updateTableValues();
+            setButtonsDisable(false);
+        }else{
+            ErrorHandler.SimpleError("You need to select something first.","No selection !");
         }
     }
 
     //_____________GENERAL FUCTIONS_____________
+
     private void initializeTable(){
 
         //Initialize the Rezervations tab _________________________________________
-
         TableColumn<Reservation,Integer> ReservationIDCollum = new TableColumn<>("ID");
         ReservationIDCollum.setCellValueFactory(new PropertyValueFactory<>("ReservationID"));
 
@@ -267,9 +343,7 @@ public class MainWindowController {
 
     private void initializeDropbox(){
         choiceBoxFlight.setOnAction(this::onFlightSelect);
-
         choiceBoxFlight.setItems(flightsName);
-
         updateDropbox();
     }
 
@@ -281,8 +355,13 @@ public class MainWindowController {
             String key = flight.getFlightID() +": "+ flight.getFlightDepLocName() +" to "+ flight.getFlightArrLocName();
             flightsMap.put(key ,flight.getFlightID() );
         }
-
         flightsName.addAll( flightsMap.keySet() );
+    }
+
+    private void setButtonsDisable(boolean disable){
+        for(Button button: buttonList){
+            button.setDisable(disable);
+        }
     }
 
     public void updateDetailsBox(int flightID) {
