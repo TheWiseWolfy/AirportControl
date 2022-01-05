@@ -24,9 +24,6 @@ public class InsertPlaneController {
     private Map<String,Airport> airportMap = new HashMap<String, Airport>();
 
     @FXML
-    Button buttonInsert;
-
-    @FXML
     TextField textFieldInsertModel;
     @FXML
     TextField textFieldInsertBusiness;
@@ -76,25 +73,39 @@ public class InsertPlaneController {
         DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
 
         //Recover values from the UI and local dictionary
-        String desiredModel = textFieldInsertModel.getText();
-        Integer desiredBusinessCapacity = Integer.parseInt( textFieldInsertBusiness.getText() );
-        Integer desiredEconomyCapacity = Integer.parseInt( textFieldInsertEconomy.getText() );
-
-        String desiredLocationName = choiceBoxLocation.getSelectionModel().getSelectedItem();
-        Integer desiredLocationId = airportMap.get(desiredLocationName).getAirportID();
 
         try {
+            String desiredModel = textFieldInsertModel.getText();
+            if (desiredModel.isEmpty()){
+                throw new RuntimeException("blank");
+            }
+            int desiredBusinessCapacity = Integer.parseInt( textFieldInsertBusiness.getText() );
+            int desiredEconomyCapacity = Integer.parseInt( textFieldInsertEconomy.getText() );
+
+            String desiredLocationName = choiceBoxLocation.getSelectionModel().getSelectedItem();
+            int desiredLocationId = airportMap.get(desiredLocationName).getAirportID();
+
             databaseConnection.addPlane(desiredModel,desiredBusinessCapacity,desiredEconomyCapacity,desiredLocationId );
+
+            Stage stage = (Stage) choiceBoxLocation.getScene().getWindow();
+            stage.close();
         }
         catch (SQLException ex){
-            ex.printStackTrace();
+              if(ex.getErrorCode() == 2290){
+                ErrorHandler.SimpleError( "You cannot have a negative or too small number of seats",  "Imput Error");
+            } else { ex.printStackTrace();}
         }
-        finally {
-            textFieldInsertModel.clear();
-            textFieldInsertBusiness.clear();
-            choiceBoxLocation.getSelectionModel().clearSelection();
+        catch (Exception ex){
+            if( ex.getClass() ==  NumberFormatException.class){
+                ErrorHandler.SimpleError( "You cannot add letters to the numeric fields or leave them black",  "Imput Error");
+            }
+            else if( ex.getClass() ==  NullPointerException.class){
+                ErrorHandler.SimpleError( "You cannot leave the dropbox blank.",  "Imput Error");
+            }
+            else if( ex.getMessage() == "blank" ){
+                ErrorHandler.SimpleError( "You cannot leave the model field blank.",  "Imput Error");
+            }
+            else { ex.printStackTrace();}
         }
     }
-
-
 }

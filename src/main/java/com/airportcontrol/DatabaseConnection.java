@@ -4,7 +4,6 @@ import com.airportcontrol.View.TableClasses.Airport;
 import com.airportcontrol.View.TableClasses.Flight;
 import com.airportcontrol.View.TableClasses.Plane;
 import com.airportcontrol.View.TableClasses.Reservation;
-import javafx.scene.control.Alert;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -32,6 +31,7 @@ public class DatabaseConnection {
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
             con = DriverManager.getConnection("jdbc:oracle:thin:@bd-dc.cs.tuiasi.ro:1539:orcl", "bd096", "bd096");
+            con.setAutoCommit(false);
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -60,6 +60,8 @@ public class DatabaseConnection {
         PreparedStatement preparedStmt = con.prepareStatement(query);
         preparedStmt.setString (1, airportName);
         preparedStmt.execute();
+
+        con.commit();
     }
 
     //Recover all airports from the database
@@ -92,6 +94,7 @@ public class DatabaseConnection {
         preparedStmt.setInt (1, id);
         preparedStmt.execute();
 
+       con.commit();
     }
 
     public void editDatabaseAirport( int id, String newName) throws SQLException {
@@ -104,6 +107,8 @@ public class DatabaseConnection {
         preparedStmt.setString (1, newName);
         preparedStmt.setInt (2, id);
         preparedStmt.execute();
+
+        con.commit();
     }
 
 
@@ -147,6 +152,8 @@ public class DatabaseConnection {
         preparedStmt.setInt(4,desiredLocationId);
 
         preparedStmt.execute();
+
+        con.commit();
     }
 
     public void deleteDatabasePlane(int planeId) throws SQLException {
@@ -156,6 +163,8 @@ public class DatabaseConnection {
         PreparedStatement preparedStmt = con.prepareStatement(query);
         preparedStmt.setInt (1, planeId);
         preparedStmt.execute();
+
+        con.commit();
     }
 
     //Here we only return planes that are not used in other flights at also at that location.
@@ -189,7 +198,8 @@ public class DatabaseConnection {
     public List<Flight> getDatabaseFlights() throws SQLException {
         List<Flight> flightList = new ArrayList();
 
-        String query = "SELECT FLIGHT_ID, FLIGHT_DEPARTURE_LOC, FLIGHT_ARRIVAL_LOC, PLANE_ID, a.AIRPORT_NAME AS DEP_NAME, b.AIRPORT_NAME as ARR_NAME\n" +
+        String query = "SELECT FLIGHT_ID, FLIGHT_DEPARTURE_LOC, FLIGHT_ARRIVAL_LOC, PLANE_ID,FLIGHT_BUSINESS_SEATS_LEFT,FLIGHT_ECONOMY_SEATS_LEFT," +
+                " a.AIRPORT_NAME AS DEP_NAME, b.AIRPORT_NAME as ARR_NAME\n" +
                 "FROM FLIGHTS, AIRPORTS a, AIRPORTS b\n" +
                 "WHERE FLIGHT_DEPARTURE_LOC = a.AIRPORT_ID AND FLIGHT_ARRIVAL_LOC = b.AIRPORT_ID";
 
@@ -203,8 +213,10 @@ public class DatabaseConnection {
             int planeID = rs.getInt("PLANE_ID");
             String depName = rs.getString( "DEP_NAME");
             String arrName = rs.getString("ARR_NAME" );
+            int businessSeatsLeft = rs.getInt("FLIGHT_BUSINESS_SEATS_LEFT");
+            int economySeatsLeft = rs.getInt("FLIGHT_ECONOMY_SEATS_LEFT");
 
-            flightList.add(new Flight(id,depID,arrID,planeID,depName ,arrName));
+            flightList.add(new Flight(id,depID,arrID,planeID,depName ,arrName, businessSeatsLeft, economySeatsLeft));
         }
         return flightList;
     }
@@ -212,16 +224,22 @@ public class DatabaseConnection {
     //Add plane in the database
     public void addFlight(int desiredDepLocID, int desiredArrLocID, int desiredPlaneID) throws SQLException {
         // the mysql insert statement
-        String query = "insert into FLIGHTS ( FLIGHT_ID, FLIGHT_DEPARTURE_LOC, FLIGHT_ARRIVAL_LOC, PLANE_ID)\n" +
-                        "VALUES (seq_flights.nextval, ?, ? , ?  )";
+        String query = "INSERT INTO FLIGHTS ( FLIGHT_ID, FLIGHT_DEPARTURE_LOC, FLIGHT_ARRIVAL_LOC, PLANE_ID, FLIGHT_ECONOMY_SEATS_LEFT,FLIGHT_BUSINESS_SEATS_LEFT)\n" +
+                        "SELECT seq_flights.nextval, ?, ? , ?,ECONOMY_CAPACITY, BUSINESS_CAPACITY\n" +
+                        "FROM PLANES p \n" +
+                        "WHERE p.PLANE_ID = ?\n";
 
         // Properly insert into sql the airport
         PreparedStatement preparedStmt = con.prepareStatement(query);
         preparedStmt.setInt (1, desiredDepLocID);
         preparedStmt.setInt(2, desiredArrLocID);
+
         preparedStmt.setInt(3, desiredPlaneID);
+        preparedStmt.setInt(4, desiredPlaneID);
 
         preparedStmt.execute();
+
+        con.commit();
     }
 
     public void deleteDatabaseFlight(int flightID) throws SQLException {
@@ -231,6 +249,32 @@ public class DatabaseConnection {
         PreparedStatement preparedStmt = con.prepareStatement(query);
         preparedStmt.setInt (1, flightID);
         preparedStmt.execute();
+
+        con.commit();
+    }
+
+    public Flight getDatabaseFlightByID(int flightID) throws SQLException {
+        String query = "SELECT FLIGHT_ID, FLIGHT_DEPARTURE_LOC, FLIGHT_ARRIVAL_LOC, PLANE_ID,FLIGHT_BUSINESS_SEATS_LEFT,FLIGHT_ECONOMY_SEATS_LEFT," +
+                " a.AIRPORT_NAME AS DEP_NAME, b.AIRPORT_NAME as ARR_NAME\n" +
+                "FROM FLIGHTS, AIRPORTS a, AIRPORTS b\n" +
+                "WHERE FLIGHT_ID = ?";
+
+        PreparedStatement preparedStmt = con.prepareStatement(query);
+        preparedStmt.setInt (1, flightID);
+
+        ResultSet rs = preparedStmt.executeQuery();
+
+        rs.next();
+        int id = rs.getInt("FLIGHT_ID");
+        int depID = rs.getInt("FLIGHT_DEPARTURE_LOC");
+        int arrID = rs.getInt("FLIGHT_ARRIVAL_LOC");
+        int planeID = rs.getInt("PLANE_ID");
+        String depName = rs.getString( "DEP_NAME");
+        String arrName = rs.getString("ARR_NAME" );
+        int businessSeatsLeft = rs.getInt("FLIGHT_BUSINESS_SEATS_LEFT");
+        int economySeatsLeft = rs.getInt("FLIGHT_ECONOMY_SEATS_LEFT");
+
+        return new Flight(id,depID,arrID,planeID,depName ,arrName, businessSeatsLeft, economySeatsLeft);
     }
 
     //_____________RESERVATION BUSINESS_____________
@@ -260,21 +304,62 @@ public class DatabaseConnection {
 
     //Add plane in the database
     public void addReservation(int numberOfEconomySeats, int numberOfBusinessSeats, String holderName, int flightID) throws SQLException {
-        // the mysql insert statement
-        String query = "insert into RESERVATIONS ( RESERVATION_ID, NUMBER_OF_ECONOMY_SEATS, NUMBER_OF_BUSINESS_SEATS ,HOLDER_NAME, FLIGHT_ID)\n" +
-                        "VALUES (seq_reservations.nextval, ?,?,?, ? )";
 
-        // Properly insert into sql the airport
-        PreparedStatement preparedStmt = con.prepareStatement(query);
+        String query1 = "UPDATE FLIGHTS\n" +
+                "SET FLIGHT_ECONOMY_SEATS_LEFT = FLIGHT_ECONOMY_SEATS_LEFT - ?,\n" +
+                "    FLIGHT_BUSINESS_SEATS_LEFT = FLIGHT_BUSINESS_SEATS_LEFT - ?\n" +
+                "WHERE FLIGHT_ID = ?\n";
 
-        preparedStmt.setInt (1, numberOfEconomySeats);
-        preparedStmt.setInt(2, numberOfBusinessSeats);
-        preparedStmt.setString(3, holderName);
-        preparedStmt.setInt(4, flightID);
+        String query2 = "insert into RESERVATIONS ( RESERVATION_ID, NUMBER_OF_ECONOMY_SEATS, NUMBER_OF_BUSINESS_SEATS ,HOLDER_NAME, FLIGHT_ID)\n" +
+                "VALUES (seq_reservations.nextval, ?,?,?, ? )";
 
-        preparedStmt.execute();
+        try {
+            PreparedStatement preparedStmt1 = con.prepareStatement(query1);
+            preparedStmt1.setInt(1, numberOfEconomySeats);
+            preparedStmt1.setInt(2, numberOfBusinessSeats);
+            preparedStmt1.setInt(3, flightID);
+            preparedStmt1.execute();
+
+            // Properly insert into sql the airport
+            PreparedStatement preparedStmt2 = con.prepareStatement(query2);
+            preparedStmt2.setInt (1, numberOfEconomySeats);
+            preparedStmt2.setInt(2, numberOfBusinessSeats);
+            preparedStmt2.setString(3, holderName);
+            preparedStmt2.setInt(4, flightID);
+
+            preparedStmt2.execute();
+        }catch (SQLException e){
+            con.rollback();
+            throw(e);
+        }
+        con.commit();
     }
 
+    public void deleteDatabaseReservation(Reservation reservation) throws SQLException {
+        String query1 = "UPDATE FLIGHTS\n" +
+                "SET FLIGHT_ECONOMY_SEATS_LEFT = FLIGHT_ECONOMY_SEATS_LEFT + ?,\n" +
+                "    FLIGHT_BUSINESS_SEATS_LEFT = FLIGHT_BUSINESS_SEATS_LEFT + ?\n" +
+                "WHERE FLIGHT_ID = ?\n";
+
+        String query2 = "DELETE FROM RESERVATIONS WHERE RESERVATION_ID = ?";
+
+        try {
+            PreparedStatement preparedStmt1 = con.prepareStatement(query1);
+            preparedStmt1.setInt(1, reservation.getEconomySeats());
+            preparedStmt1.setInt(2, reservation.getBusinessSeats());
+            preparedStmt1.setInt(3, reservation.getFlightID());
+            preparedStmt1.execute();
+
+            // Properly insert into sql the airport
+            PreparedStatement preparedStmt2 = con.prepareStatement(query2);
+            preparedStmt2.setInt (1, reservation.getReservationID());
+            preparedStmt2.execute();
+        }catch (SQLException e){
+            e.printStackTrace();
+            con.rollback();
+        }
+        con.commit();
+    }
 
 
 }

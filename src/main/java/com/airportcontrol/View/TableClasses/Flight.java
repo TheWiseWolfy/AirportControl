@@ -2,22 +2,28 @@ package com.airportcontrol.View.TableClasses;
 
 public class Flight {
 
-    private int FlightID;
-    private int FlightDepLocID;
-    private int FlightArrLocID;
-    private int PlaneID;
+    private final int FlightID;
+    private final int FlightDepLocID;
+    private final int FlightArrLocID;
+    private final int PlaneID;
 
-    private String FlightDepLocName;
-    private String FlightArrLocName;
+    private final String FlightDepLocName;
+    private final String FlightArrLocName;
 
-    public Flight(int flightID, int flightDepLocID, int flightArrLocID, int planeID, String flightDepLocName, String flightArrLocName){
-       this.FlightID = flightID;
-       this.FlightDepLocID = flightDepLocID;
-       this.FlightArrLocID = flightArrLocID;
-       this.PlaneID = planeID;
 
-       this.FlightDepLocName = flightDepLocName;
-       this.FlightArrLocName = flightArrLocName;
+
+    private final int BusinessSeatsLeft;
+    private final int EconomySeatsLeft;
+
+    public Flight(int flightID, int flightDepLocID, int flightArrLocID, int planeID, String flightDepLocName, String flightArrLocName, int businessSeatsLeft, int economySeatsLeft){
+      FlightID = flightID;
+      FlightDepLocID = flightDepLocID;
+      FlightArrLocID = flightArrLocID;
+      PlaneID = planeID;
+      FlightDepLocName = flightDepLocName;
+      FlightArrLocName = flightArrLocName;
+      BusinessSeatsLeft = businessSeatsLeft;
+      EconomySeatsLeft = economySeatsLeft;
     }
 
     public int getFlightID() {
@@ -44,4 +50,11 @@ public class Flight {
         return FlightArrLocName;
     }
 
+    public int getBusinessSeatsLeft() {
+        return BusinessSeatsLeft;
+    }
+
+    public int getEconomySeatsLeft() {
+        return EconomySeatsLeft;
+    }
 }

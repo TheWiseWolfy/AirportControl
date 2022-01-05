@@ -112,28 +112,33 @@ public class InsertFlightController {
     public void insertFlight(ActionEvent e) {
         DatabaseConnection con = DatabaseConnection.getInstance();
 
-        String desiredDepLocationName = choiceBoxDeparture.getSelectionModel().getSelectedItem();
-        int desiredDepID = airportMap.get(desiredDepLocationName).getAirportID();
-
-        String desiredArrLocationName = choiceBoxArrival.getSelectionModel().getSelectedItem();
-        int desiredArrID = airportMap.get(desiredArrLocationName).getAirportID();
-
-        int desiredPlaneID = choiceBoxPlaneID.getSelectionModel().getSelectedItem();
-
         try {
+            String desiredDepLocationName = choiceBoxDeparture.getSelectionModel().getSelectedItem();
+            int desiredDepID = airportMap.get(desiredDepLocationName).getAirportID();
+
+            String desiredArrLocationName = choiceBoxArrival.getSelectionModel().getSelectedItem();
+            int desiredArrID = airportMap.get(desiredArrLocationName).getAirportID();
+
+            int desiredPlaneID = choiceBoxPlaneID.getSelectionModel().getSelectedItem();
+
             con.addFlight(desiredDepID,desiredArrID, desiredPlaneID );
+
+            Stage stage = (Stage) choiceBoxPlaneID.getScene().getWindow();
+            stage.close();
         }
-        catch (SQLException ex){
-            if( ex.getErrorCode() == 2290){
-                ErrorHandler.SimpleError( "A flight cannot go to the same place is started.","Stupid Error");
+        catch (RuntimeException ex){
+            if( ex.getClass() ==  NullPointerException.class){
+                ErrorHandler.SimpleError( "You cannot leave the dropbox blank.",  "Imput Error");
             }
             else { ex.printStackTrace(); }
         }
-        finally {
-            choiceBoxDeparture.getSelectionModel().clearSelection();
-            choiceBoxArrival.getSelectionModel().clearSelection();
-            choiceBoxPlaneID.getSelectionModel().clearSelection();
+        catch (SQLException ex){
+            if( ex.getErrorCode() == 2290){
+                ErrorHandler.SimpleError( "A flight cannot go to the same place it started.","Stupid Error");
+            }
+            else { ex.printStackTrace(); }
         }
+
     }
 
 

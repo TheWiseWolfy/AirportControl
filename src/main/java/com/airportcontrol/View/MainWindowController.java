@@ -14,12 +14,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-
 
 public class MainWindowController {
 
@@ -28,8 +28,8 @@ public class MainWindowController {
      private ObservableList<Flight> flights = FXCollections.observableArrayList();
     private ObservableList<Reservation> reservations = FXCollections.observableArrayList();
 
-    private Map<Integer,Flight> flightsMap = new HashMap<Integer, Flight>();
-    private ObservableList<Integer> flightsInteger = FXCollections.observableArrayList();
+    private Map<String,Integer> flightsMap = new HashMap<String, Integer>();
+    private ObservableList<String> flightsName = FXCollections.observableArrayList();
 
     @FXML
     TableView<Airport> airportTableView;
@@ -39,9 +39,10 @@ public class MainWindowController {
     TableView<Flight> flightTableView;
     @FXML
     TableView<Reservation> reservationsTableView;
-
     @FXML
-    ChoiceBox<Integer> choiceBoxFlight;
+    ChoiceBox<String> choiceBoxFlight;
+    @FXML
+    TextArea detailsBox;
 
     //Fuctia asta e rulata doar la initializare
 
@@ -123,6 +124,7 @@ public class MainWindowController {
     void insertFlight(ActionEvent e) {
         InsertFlightController.display();
         updateTableValues();
+        updateDropbox();
     }
 
     @FXML
@@ -139,26 +141,48 @@ public class MainWindowController {
             }
         }
         updateTableValues();
+        updateDropbox();
     }
 
     @FXML
     private void onFlightSelect(ActionEvent actionEvent) {
         updateTableValues();
     }
+
     //_____________RESERVATIONS TAB_____________
 
     @FXML
     void insertReservation(ActionEvent e) {
         if( choiceBoxFlight.getSelectionModel().getSelectedItem() != null)  {
-            InsertReservationController.display( choiceBoxFlight.getSelectionModel().getSelectedItem() );
+            String flightName = choiceBoxFlight.getSelectionModel().getSelectedItem();
+            int flightID = flightsMap.get(flightName);
+            InsertReservationController.display( flightID );
             updateTableValues();
+        }else{
+            ErrorHandler.SimpleError("You need to select a flight before making a reservation.","No selection !");
+        }
+    }
+
+    @FXML
+    void deleteReservation( ActionEvent e){
+        Reservation selectedReservation = reservationsTableView.getSelectionModel().getSelectedItem();
+
+        if( selectedReservation != null) {
+            try {
+                DatabaseConnection.getInstance().deleteDatabaseReservation(selectedReservation);
+                updateTableValues();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }else{
+            ErrorHandler.SimpleError("You need to select a reservation before deleting it.","No selection !");
         }
     }
 
     //_____________GENERAL FUCTIONS_____________
     private void initializeTable(){
 
-        //Initialize the Rezervations tab
+        //Initialize the Rezervations tab _________________________________________
 
         TableColumn<Reservation,Integer> ReservationIDCollum = new TableColumn<>("ID");
         ReservationIDCollum.setCellValueFactory(new PropertyValueFactory<>("ReservationID"));
@@ -178,7 +202,7 @@ public class MainWindowController {
         reservationsTableView.getColumns().add(ReservationHolderNameCollum);
         reservationsTableView.setItems(reservations);
 
-        //Initialize the Flights Tab
+        //Initialize the Flights Tab _________________________________________
         TableColumn<Flight,Integer> FlightIdCollum = new TableColumn<>("ID");
         FlightIdCollum.setCellValueFactory(new PropertyValueFactory<>("FlightID"));
 
@@ -191,13 +215,22 @@ public class MainWindowController {
         TableColumn<Flight,Integer> FlightPlaneIdCollum = new TableColumn<>("Plane ID");
         FlightPlaneIdCollum.setCellValueFactory(new PropertyValueFactory<>("PlaneID"));
 
+        TableColumn<Flight,Integer> FlightBusinessSeatsCollum = new TableColumn<>("Business Seats Left");
+        FlightBusinessSeatsCollum.setCellValueFactory(new PropertyValueFactory<>("BusinessSeatsLeft"));
+
+        TableColumn<Flight,Integer> FlightEconomySeatsCollum = new TableColumn<>("Economy Seats Left");
+        FlightEconomySeatsCollum.setCellValueFactory(new PropertyValueFactory<>("EconomySeatsLeft"));
+
         flightTableView.getColumns().add(FlightIdCollum);
         flightTableView.getColumns().add(FlightDepNameCollum);
         flightTableView.getColumns().add(FlightArrNameCollum);
         flightTableView.getColumns().add(FlightPlaneIdCollum);
+        flightTableView.getColumns().add(FlightBusinessSeatsCollum);
+        flightTableView.getColumns().add(FlightEconomySeatsCollum);
+
         flightTableView.setItems(flights);
 
-        //Initialize the Planes Tab
+        //Initialize the Planes Tab _________________________________________
         TableColumn<Plane,Integer> PlaneIdCollum = new TableColumn<>("ID");
         PlaneIdCollum.setCellValueFactory(new PropertyValueFactory<>("PlaneID"));
 
@@ -220,23 +253,51 @@ public class MainWindowController {
         planeTableView.getColumns().add(PlaneLocationCollum);
         planeTableView.setItems(planes);
 
-        //Initialize Airport table
-        TableColumn<Airport,String> AirportNameTable = new TableColumn<>("Airport Name");
-        AirportNameTable.setCellValueFactory(new PropertyValueFactory<>("AirportName"));
+        //Initialize Airport table _________________________________________
+        TableColumn<Airport,String> AirportNameColumn = new TableColumn<>("Airport Name");
+        AirportNameColumn.setCellValueFactory(new PropertyValueFactory<>("AirportName"));
 
-        airportTableView.getColumns().add(AirportNameTable);
+        TableColumn<Airport,String> AirportIDColumn = new TableColumn<>("Airport ID");
+        AirportIDColumn.setCellValueFactory(new PropertyValueFactory<>("AirportID"));
+
+        airportTableView.getColumns().add(AirportIDColumn);
+        airportTableView.getColumns().add(AirportNameColumn);
         airportTableView.setItems(airports);
     }
 
     private void initializeDropbox(){
         choiceBoxFlight.setOnAction(this::onFlightSelect);
 
-        for (Flight flight : flights){
-            flightsMap.put( flight.getFlightID(),flight );
-        }
-        flightsInteger.addAll( flightsMap.keySet() );
+        choiceBoxFlight.setItems(flightsName);
 
-        choiceBoxFlight.setItems(flightsInteger);
+        updateDropbox();
+    }
+
+    public void updateDropbox(){
+        flightsMap.clear();
+        flightsName.clear();
+
+        for (Flight flight : flights){
+            String key = flight.getFlightID() +": "+ flight.getFlightDepLocName() +" to "+ flight.getFlightArrLocName();
+            flightsMap.put(key ,flight.getFlightID() );
+        }
+
+        flightsName.addAll( flightsMap.keySet() );
+    }
+
+    public void updateDetailsBox(int flightID) {
+        try {
+            Flight flight = DatabaseConnection.getInstance().getDatabaseFlightByID(flightID);
+
+            String finalText = "";
+            finalText += "This flight will depart from: " + flight.getFlightDepLocName();
+            finalText += "and arrive at: " + flight.getFlightArrLocName() + ".\n";
+            finalText += "There are " + flight.getEconomySeatsLeft() + " economy class seats left";
+            finalText += " and " + flight.getBusinessSeatsLeft() + " business class seats left.\n";
+            detailsBox.setText(finalText);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private void updateTableValues(){
@@ -251,7 +312,10 @@ public class MainWindowController {
             flights.addAll(  DatabaseConnection.getInstance().getDatabaseFlights() );
 
            if( choiceBoxFlight.getSelectionModel().getSelectedItem() != null)  {
-               reservations.addAll( DatabaseConnection.getInstance().getReservationsForFlight(choiceBoxFlight.getSelectionModel().getSelectedItem()) );
+               String flightName = choiceBoxFlight.getSelectionModel().getSelectedItem();
+               int flightID = flightsMap.get(flightName);
+               reservations.addAll( DatabaseConnection.getInstance().getReservationsForFlight( flightID ) );
+               updateDetailsBox( flightID );
            }
         }
         catch (Exception e){

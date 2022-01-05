@@ -2,12 +2,13 @@ package com.airportcontrol.View.TableClasses;
 
 public class Plane {
 
-    private int PlaneID;
-    private String PlaneModel;
-    private int BusinessCapacity;
-    private int EconomyCapacity;
-    private int PlaneLocationId;
-    private String PlaneLocationName;
+    private final int PlaneID;
+    private final String PlaneModel;
+    private final int BusinessCapacity;
+    private final int EconomyCapacity;
+    private final int PlaneLocationId;
+    private final String PlaneLocationName;
+
 
     public Plane(int planeID, String model, int businessCapacity, int economyCapacity, int planeLocationId, String planeLocationName){
         this.PlaneID = planeID;

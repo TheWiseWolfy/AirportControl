@@ -1,6 +1,7 @@
 package com.airportcontrol.View;
 
 import com.airportcontrol.DatabaseConnection;
+import com.airportcontrol.Other.ErrorHandler;
 import com.airportcontrol.View.TableClasses.Airport;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -60,21 +61,34 @@ public class InsertReservationController {
     public void insertPlane(ActionEvent e) {
         DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
 
-        //Recover values from the UI and local dictionary
-        String holderName = textFieldInsertHolder.getText();
-        Integer desiredBusinessCapacity = Integer.parseInt( textFieldInsertBusiness.getText() );
-        Integer desiredEconomyCapacity = Integer.parseInt( textFieldInsertEconomy.getText() );
 
         try {
+            //Recover values from the UI and local dictionary
+            String holderName = textFieldInsertHolder.getText();
+            if (holderName.isEmpty()){
+                throw new RuntimeException("blank");
+            }
+
+            int desiredBusinessCapacity = Integer.parseInt( textFieldInsertBusiness.getText() );
+            int desiredEconomyCapacity = Integer.parseInt( textFieldInsertEconomy.getText() );
+
             databaseConnection.addReservation(desiredEconomyCapacity,desiredBusinessCapacity,holderName, flightID );
+
+            Stage stage = (Stage) textFieldInsertHolder.getScene().getWindow();
+            stage.close();
         }
         catch (SQLException ex){
-            ex.printStackTrace();
+            if( ex.getErrorCode() == 2290){
+                ErrorHandler.SimpleError( "You cannot reserve more seats than they are available or negative seats","Imput Error");
+            }else { ex.printStackTrace(); }
         }
-        finally {
-            textFieldInsertHolder.clear();
-            textFieldInsertEconomy.clear();
-            textFieldInsertBusiness.clear();
+        catch (Exception ex) {
+            if (ex.getClass() == NumberFormatException.class) {
+                ErrorHandler.SimpleError("You cannot add letters to the numeric fields or leave them black", "Imput Error");
+            }
+            else if( ex.getMessage() == "blank" ){
+                ErrorHandler.SimpleError( "You cannot leave the name field blank.",  "Imput Error");
+            }else { ex.printStackTrace(); }
         }
     }
 
