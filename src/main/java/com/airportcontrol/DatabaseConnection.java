@@ -30,7 +30,7 @@ public class DatabaseConnection {
         //step1 load the driver class
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
-            con = DriverManager.getConnection("jdbc:oracle:thin:@bd-dc.cs.tuiasi.ro:1539:orcl", "bd096", "bd096");
+            con = DriverManager.getConnection("", "", "");
             con.setAutoCommit(false);
         } catch (Exception e) {
            e.printStackTrace();
